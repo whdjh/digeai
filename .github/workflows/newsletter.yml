@@ -1,0 +1,82 @@
+# 뉴스 파이프라인: 매일 오전/오후 AI 뉴스를 수집·요약·발송한다.
+# 수동 트리거(workflow_dispatch)로 즉시 실행도 가능.
+
+name: Newsletter
+
+on:
+  schedule:
+    - cron: '0 23 * * *'  # 매일 23:00 UTC = 익일 08:00 KST (morning 세션)
+    - cron: '0 8 * * *'   # 매일 08:00 UTC = 당일 17:00 KST (evening 세션)
+  workflow_dispatch:
+    inputs:
+      session:
+        description: 'morning 또는 evening'
+        required: true
+        default: 'evening'
+        type: choice
+        options:
+          - morning
+          - evening
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+# 같은 세션이 동시에 두 번 실행되지 않도록. 진행 중이면 새 트리거는 큐잉.
+concurrency:
+  group: newsletter-${{ github.event.schedule || github.event.inputs.session }}
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # cron 값으로 morning/evening을 결정. workflow_dispatch는 입력값 그대로.
+      - name: Determine session
+        id: session
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 23 * * *") SESSION="morning" ;;
+            "0 8 * * *")  SESSION="evening" ;;
+            *)            SESSION="${{ github.event.inputs.session }}" ;;
+          esac
+          if [ "$SESSION" != "morning" ] && [ "$SESSION" != "evening" ]; then
+            echo "::error::잘못된 세션 값: '$SESSION' (morning 또는 evening만 허용)"
+            exit 1
+          fi
+          echo "name=$SESSION" >> "$GITHUB_OUTPUT"
+
+      - name: Run newsletter pipeline
+        run: node pipeline/main.js --session ${{ steps.session.outputs.name }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          RSSHUB_BASE_URL: ${{ secrets.RSSHUB_BASE_URL }}    # optional
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}                # optional
+
+      - name: Failure summary
+        if: failure()
+        run: |
+          {
+            echo "## ❌ Newsletter pipeline failed"
+            echo "- session: ${{ steps.session.outputs.name }}"
+            echo "- run: ${{ github.run_id }}"
+            echo ""
+            echo "로그를 확인하고 필요하면 workflow_dispatch로 수동 재실행하라."
+          } >> "$GITHUB_STEP_SUMMARY"
