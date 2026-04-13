@@ -28,8 +28,11 @@ const SCHEMA = {
           title: { type: Type.STRING },
           url: { type: Type.STRING },
           summary: { type: Type.STRING },
+          // 0~10. AI/ML 엔지니어 또는 AI 활용 개발자가 업무에 참고할 가치.
+          // main.js에서 임계값 미만 기사는 발송에서 제외.
+          engineeringRelevance: { type: Type.INTEGER },
         },
-        propertyOrdering: ['title', 'url', 'summary'],
+        propertyOrdering: ['title', 'url', 'summary', 'engineeringRelevance'],
       },
     },
     trend: { type: Type.STRING },
@@ -42,7 +45,17 @@ function buildPrompt(articles) {
     .map((a, i) => `${i + 1}. [${a.source}] ${a.title}\n   ${a.url}`)
     .join('\n')
   return `다음은 오늘 수집된 AI 관련 뉴스 목록입니다.
-각 기사를 1~2문장으로 요약하되, 기술적인 내용은 비전문가도 이해할 수 있도록 쉽게 작성해주세요.
+
+각 기사에 대해 다음을 수행하세요:
+1. 1~2문장 요약 (기술 내용은 비전문가도 이해할 수 있게 쉽게)
+2. engineeringRelevance 0~10 점수 채점 — AI/ML 엔지니어 또는 AI 활용 개발자가 업무에 직접 참고할 가치가 얼마나 있는가
+
+[채점 기준]
+- 9~10: 모델 릴리즈/업데이트, 신규 API·SDK·CLI, 오픈소스 도구, 벤치마크/평가, 아키텍처·기법(RAG·에이전트·파인튜닝·컨텍스트 윈도우 등), 코드 사례, 인프라·서빙·MCP
+- 6~8: 기술 컨셉 해설, 도구 비교, 보안·프라이버시, 실제 적용 사례 분석, 개발 워크플로우·생산성
+- 3~5: AI 일반론, 산업 동향, 사용 후기 단편, 비기술 적용 사례
+- 0~2: 단순 가격/플랜 공지, 마케팅, VC 펀딩·밸류에이션, 정치·규제·거시경제, 비AI 주제
+
 요약 후 전체 뉴스를 관통하는 오늘의 AI 트렌드 한 줄을 마지막에 작성해주세요.
 
 [기사 목록]

@@ -85,16 +85,41 @@ async function main() {
     `[digeai] diversify: ${diversified.length}건 / source ${Object.keys(sourceDist).length}개 — ${Object.entries(sourceDist).map(([s, c]) => `${s}:${c}`).join(', ')}`,
   )
 
-  // 4. 요약 (Gemini 구조화 JSON)
+  // 4. 요약 (Gemini 구조화 JSON + engineeringRelevance 점수)
   console.log('[digeai] 요약 호출 중...')
   const summary = await summarize(diversified)
   console.log(`[digeai] 요약 완료: items=${summary.items.length}`)
+
+  // 4.5. 엔지니어링 관련성 임계값 필터 (default 5).
+  //   Gemini가 0~10 채점한 점수가 임계 미만이면 발송 제외.
+  //   임계값은 RELEVANCE_THRESHOLD env로 조정 가능.
+  const threshold = Number(process.env.RELEVANCE_THRESHOLD ?? 5)
+  const beforeFilter = summary.items.length
+  const droppedItems = summary.items.filter(
+    (it) => Number.isFinite(it.engineeringRelevance) && it.engineeringRelevance < threshold,
+  )
+  const keptItems = summary.items.filter(
+    (it) => !Number.isFinite(it.engineeringRelevance) || it.engineeringRelevance >= threshold,
+  )
+  if (droppedItems.length > 0) {
+    console.log(
+      `[digeai] 관련성 필터 (>=${threshold}): ${beforeFilter} → ${keptItems.length}건 (제외 ${droppedItems.length})`,
+    )
+    for (const it of droppedItems) {
+      console.log(`           drop[${it.engineeringRelevance ?? '?'}]: ${it.title}`)
+    }
+  }
+
+  if (keptItems.length === 0) {
+    console.log('[digeai] 관련성 임계값 통과 기사 없음 — 발송 생략')
+    return
+  }
 
   // 5. 렌더
   const { subject, html } = renderEmail({
     session,
     date: now,
-    items: summary.items,
+    items: keptItems,
     trend: summary.trend,
   })
 
@@ -118,7 +143,7 @@ async function main() {
 
   const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1)
   console.log(
-    `[digeai] session=${session} collected=${collected.length} deduped=${deduped.length} window=${filtered.length} summarized=${summary.items.length} sent=${sent} failed=${failed.length} elapsed=${elapsed}s`,
+    `[digeai] session=${session} collected=${collected.length} deduped=${deduped.length} window=${filtered.length} summarized=${summary.items.length} kept=${keptItems.length} sent=${sent} failed=${failed.length} elapsed=${elapsed}s`,
   )
   if (failed.length > 0) {
     console.error(`[digeai] 발송 실패 ${failed.length}건: ${failed.join(', ')}`)

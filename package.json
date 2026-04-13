@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "db:init": "node scripts/init-db.js",
     "pipeline:morning": "node pipeline/main.js --session morning",
-    "pipeline:evening": "node pipeline/main.js --session evening"
+    "pipeline:evening": "node pipeline/main.js --session evening",
+    "inspect:relevance": "node scripts/inspect-relevance.js"
   },
   "dependencies": {
     "@google/genai": "^1.9.0",
