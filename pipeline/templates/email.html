@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>{{subject_text}}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f6f6f9;font-family:system-ui,-apple-system,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#1f1d2c;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f6f9;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <!-- 헤더 -->
+            <tr>
+              <td style="padding:24px 28px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;">
+                <div style="font-size:13px;opacity:0.85;letter-spacing:0.4px;">{{session_label}}</div>
+                <div style="font-size:24px;font-weight:700;margin-top:4px;">📰 Digeai</div>
+                <div style="font-size:12px;opacity:0.85;margin-top:8px;">{{date}} · AI 뉴스 {{count}}건</div>
+              </td>
+            </tr>
+            <!-- 트렌드 -->
+            <tr>
+              <td style="padding:20px 28px;background:#f9f7ff;border-bottom:1px solid #ece8f5;">
+                <div style="font-size:11px;color:#7c3aed;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">오늘의 트렌드</div>
+                <div style="font-size:16px;color:#1f1d2c;margin-top:6px;line-height:1.5;">{{trend}}</div>
+              </td>
+            </tr>
+            <!-- 뉴스 목록 -->
+            <tr>
+              <td style="padding:8px 28px 24px;">
+                {{items_html}}
+              </td>
+            </tr>
+            <!-- 푸터 -->
+            <tr>
+              <td style="padding:20px 28px;background:#fafafb;color:#6b7280;font-size:12px;text-align:center;border-top:1px solid #ececf1;line-height:1.6;">
+                Digeai · 매일 오전 8시, 오후 5시 발송<br />
+                구독 해지를 원하시면 회신해 주세요.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
