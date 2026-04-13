@@ -7,6 +7,7 @@
 ## 인덱스
 
 - [0001 — Record architecture decisions](0001-record-architecture-decisions.md)
+- [0002 — Batch summarize in one Gemini call](0002-batch-summarize-in-one-gemini-call.md)
 
 ## 새 ADR 작성
 
