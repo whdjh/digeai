@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "language": "korean",
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(netlify:*)",
+      "Bash(git:*)",
+      "Bash(turso:*)",
+      "Bash(jq:*)",
+      "Bash(ls:*)",
+      "Bash(pwd)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(chmod:*)",
+      "Bash(date:*)",
+      "Edit(src/**)",
+      "Edit(pipeline/**)",
+      "Edit(netlify/**)",
+      "Edit(.github/**)",
+      "Edit(docs/**)",
+      "Edit(.claude/**)",
+      "Edit(public/**)",
+      "Edit(*.md)",
+      "Edit(*.json)",
+      "Edit(*.js)",
+      "Edit(*.jsx)",
+      "Edit(*.html)",
+      "Edit(*.toml)",
+      "Edit(.env.example)",
+      "Edit(.gitignore)",
+      "Write(src/**)",
+      "Write(pipeline/**)",
+      "Write(netlify/**)",
+      "Write(.github/**)",
+      "Write(docs/**)",
+      "Write(.claude/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Read(.env)",
+      "Read(.env.local)",
+      "Read(.env.production)",
+      "Edit(.env)",
+      "Edit(.env.local)",
+      "Edit(.env.production)",
+      "Write(.env)",
+      "Write(.env.local)",
+      "Write(.env.production)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(npm publish:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/scan-vite-secrets.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": ".claude/statusline.sh",
+    "padding": 0
+  },
+  "spinnerTipsOverride": {
+    "excludeDefault": false,
+    "tips": [
+      "💡 시크릿에 VITE_ prefix 금지 — 클라이언트 번들에 인라인됨",
+      "💡 결정 남길 땐 /new-adr, 세션 마무리는 /log-session",
+      "💡 파이프라인 테스트: /test-pipeline morning",
+      "💡 시크릿 노출 의심되면 secret-auditor 에이전트 호출",
+      "💡 Resend 무료 한도 3000건/월 — 구독자 50명부터 위험"
+    ]
+  }
+}
