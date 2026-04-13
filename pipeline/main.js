@@ -10,6 +10,7 @@ import { parseArgs } from 'node:util'
 import { sources } from './config/sources.js'
 import { collectAll } from './sources/index.js'
 import { dedup } from './dedup.js'
+import { filterNoise } from './lib/filter.js'
 import { diversify } from './lib/diversify.js'
 import { getSessionWindow } from './lib/window.js'
 import { summarize } from './summarize.js'
@@ -56,9 +57,15 @@ async function main() {
   const deduped = dedup(collected)
   console.log(`[digeai] dedup: ${deduped.length}건 (제거 ${collected.length - deduped.length})`)
 
+  // 2.5. 노이즈 필터 (source별 자체 홍보·봇 트윗 등 제거)
+  const denoised = filterNoise(deduped)
+  if (denoised.length < deduped.length) {
+    console.log(`[digeai] 노이즈 제거: ${deduped.length - denoised.length}건`)
+  }
+
   // 3. 세션 윈도우 필터
   const win = getSessionWindow(session, now)
-  const filtered = deduped.filter(
+  const filtered = denoised.filter(
     (a) => a.publishedAt >= win.from && a.publishedAt < win.to,
   )
   console.log(
@@ -71,7 +78,7 @@ async function main() {
   }
 
   // 3.5. 다양성 보장 (source 도배 방지 + 최소 source 수 확보)
-  const diversified = diversify(filtered, deduped)
+  const diversified = diversify(filtered, denoised)
   const sourceDist = {}
   for (const a of diversified) sourceDist[a.source] = (sourceDist[a.source] ?? 0) + 1
   console.log(

@@ -15,6 +15,7 @@ import { Resend } from 'resend'
 import { sources } from '../pipeline/config/sources.js'
 import { collectAll } from '../pipeline/sources/index.js'
 import { dedup } from '../pipeline/dedup.js'
+import { filterNoise } from '../pipeline/lib/filter.js'
 import { diversify } from '../pipeline/lib/diversify.js'
 import { getSessionWindow } from '../pipeline/lib/window.js'
 
@@ -48,9 +49,13 @@ function escapeHtml(s) {
 console.log(`[send-raw] 수집 중... session=${session}`)
 const collected = await collectAll(sources)
 const deduped = dedup(collected)
+const denoised = filterNoise(deduped)
+if (denoised.length < deduped.length) {
+  console.log(`[send-raw] 노이즈 제거: ${deduped.length - denoised.length}건`)
+}
 const win = getSessionWindow(session)
 
-const windowArticles = deduped.filter(
+const windowArticles = denoised.filter(
   (a) => a.publishedAt >= win.from && a.publishedAt < win.to,
 )
 
@@ -60,13 +65,13 @@ if (windowArticles.length < 3) {
     `[send-raw] 윈도우 내 ${windowArticles.length}건뿐 → 최근 24시간으로 확장 (테스트 모드)`,
   )
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
-  articles = deduped
+  articles = denoised
     .filter((a) => a.publishedAt >= since)
     .sort((a, b) => b.publishedAt - a.publishedAt)
     .slice(0, 20)
 } else {
-  // 다양성 보장 (source당 cap + 최소 source 수)
-  articles = diversify(windowArticles, deduped)
+  // 다양성 보장 (source당 cap + 최소 source 수, lookback 72h)
+  articles = diversify(windowArticles, denoised)
 }
 
 const dist = {}
