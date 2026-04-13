@@ -1,8 +1,56 @@
-# RSSHub Self-host (Fly.io 30분 셋업)
+# RSSHub 운영 (공개 미러 우선 → self-host 백업)
 
 ## 왜 필요한가
 
-X(Twitter)는 자체 RSS를 제공하지 않는다. RSSHub가 X 페이지를 RSS로 변환해주는데, 공개 인스턴스(`rsshub.app`)는 X의 차단·rate limit으로 거의 매번 빈 응답을 준다. ADR-0003에 따라 X 8개 채널이 핵심 큐레이션이므로 self-host 없이는 사실상 발송이 안 된다.
+X(Twitter)는 자체 RSS를 제공하지 않는다. RSSHub가 X 페이지를 RSS로 변환해주는데, 메인 공개 인스턴스(`rsshub.app`)는 X의 차단·rate limit으로 거의 매번 빈 응답을 준다. ADR-0003에 따라 X 8개 채널이 핵심 큐레이션이므로 대안 미러 또는 self-host가 필요하다.
+
+## 0단계: 검증된 공개 미러 (먼저 시도, 카드 등록 X)
+
+신용카드 등록·셋업 0분으로 운영 가능. 단 공개 미러는 운영 주체가 개인이라 갑자기 죽을 수 있음 — 안정 운영 원하면 1단계(self-host)로.
+
+| 미러 | X 라우트 응답 (2026-04-13 검증) | 비고 |
+|---|---|---|
+| **`https://rsshub.pseudoyu.com`** | ✅ 11/11 소스 수집 (총 132건) | 현재 권장 |
+| `https://rsshub.app` (메인) | ❌ 404 / 빈 응답 | X 차단 |
+| `https://rsshub.rssforever.com` | ❌ 503 | 부하 |
+| 그 외 (`rsshub.feeded.xyz` 등) | ❌ timeout | 죽었거나 차단 |
+
+### 적용 방법
+
+`.env` (로컬), GitHub Secrets (자동 발송), 양쪽에 동일 환경변수:
+
+```bash
+RSSHUB_BASE_URL=https://rsshub.pseudoyu.com
+```
+
+코드 변경 X — `pipeline/sources/rsshub.js`가 환경변수를 읽고 fallback은 `rsshub.app`. 환경변수만 설정하면 즉시 적용.
+
+검증:
+
+```bash
+RSSHUB_BASE_URL=https://rsshub.pseudoyu.com node scripts/inspect-collect.js evening
+# 출력: 11/11 소스에서 수집 (각각 3~20건)
+```
+
+### 미러가 죽으면
+
+[RSSHub Public Instances 리스트](https://docs.rsshub.app/guide/instances) 에서 다른 인스턴스 시도. 또는 1단계로 진행.
+
+다른 미러 빠르게 일괄 테스트하는 스크립트:
+
+```bash
+for base in https://rsshub.app https://rsshub.pseudoyu.com https://rsshub.rssforever.com; do
+  echo "=== $base ==="
+  curl -s -o /dev/null -w "%{http_code} bytes=%{size_download}\n" \
+    "$base/twitter/user/OpenAI"
+done
+```
+
+200 + bytes > 1000 응답 주는 곳 발견 시 RSSHUB_BASE_URL 교체.
+
+---
+
+## 1단계: Self-host (안정 운영 시 — 카드 등록 필요)
 
 ## 옵션 비교
 
