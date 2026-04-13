@@ -15,6 +15,7 @@ import { Resend } from 'resend'
 import { sources } from '../pipeline/config/sources.js'
 import { collectAll } from '../pipeline/sources/index.js'
 import { dedup } from '../pipeline/dedup.js'
+import { diversify } from '../pipeline/lib/diversify.js'
 import { getSessionWindow } from '../pipeline/lib/window.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -49,22 +50,33 @@ const collected = await collectAll(sources)
 const deduped = dedup(collected)
 const win = getSessionWindow(session)
 
-let articles = deduped
-  .filter((a) => a.publishedAt >= win.from && a.publishedAt < win.to)
-  .sort((a, b) => b.publishedAt - a.publishedAt)
+const windowArticles = deduped.filter(
+  (a) => a.publishedAt >= win.from && a.publishedAt < win.to,
+)
 
-if (articles.length < 3) {
+let articles
+if (windowArticles.length < 3) {
   console.log(
-    `[send-raw] 윈도우 내 ${articles.length}건뿐 → 최근 24시간으로 확장 (테스트 모드)`,
+    `[send-raw] 윈도우 내 ${windowArticles.length}건뿐 → 최근 24시간으로 확장 (테스트 모드)`,
   )
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
   articles = deduped
     .filter((a) => a.publishedAt >= since)
     .sort((a, b) => b.publishedAt - a.publishedAt)
     .slice(0, 20)
+} else {
+  // 다양성 보장 (source당 cap + 최소 source 수)
+  articles = diversify(windowArticles, deduped)
 }
 
-console.log(`[send-raw] 발송 대상 ${articles.length}건`)
+const dist = {}
+for (const a of articles) dist[a.source] = (dist[a.source] ?? 0) + 1
+console.log(
+  `[send-raw] 발송 대상 ${articles.length}건 / source ${Object.keys(dist).length}개`,
+)
+console.log(
+  `           분포: ${Object.entries(dist).sort((a, b) => b[1] - a[1]).map(([s, c]) => `${s}:${c}`).join(', ')}`,
+)
 if (articles.length === 0) {
   console.error('[send-raw] 발송할 기사가 없음 (수집된 게 너무 옛날)')
   process.exit(1)

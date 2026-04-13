@@ -10,6 +10,7 @@ import { parseArgs } from 'node:util'
 import { sources } from './config/sources.js'
 import { collectAll } from './sources/index.js'
 import { dedup } from './dedup.js'
+import { diversify } from './lib/diversify.js'
 import { getSessionWindow } from './lib/window.js'
 import { summarize } from './summarize.js'
 import { renderEmail } from './render.js'
@@ -69,9 +70,17 @@ async function main() {
     return
   }
 
+  // 3.5. 다양성 보장 (source 도배 방지 + 최소 source 수 확보)
+  const diversified = diversify(filtered, deduped)
+  const sourceDist = {}
+  for (const a of diversified) sourceDist[a.source] = (sourceDist[a.source] ?? 0) + 1
+  console.log(
+    `[digeai] diversify: ${diversified.length}건 / source ${Object.keys(sourceDist).length}개 — ${Object.entries(sourceDist).map(([s, c]) => `${s}:${c}`).join(', ')}`,
+  )
+
   // 4. 요약 (Gemini 구조화 JSON)
   console.log('[digeai] 요약 호출 중...')
-  const summary = await summarize(filtered)
+  const summary = await summarize(diversified)
   console.log(`[digeai] 요약 완료: items=${summary.items.length}`)
 
   // 5. 렌더
