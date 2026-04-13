@@ -8,6 +8,7 @@
 
 - [0001 — Record architecture decisions](0001-record-architecture-decisions.md)
 - [0002 — Batch summarize in one Gemini call](0002-batch-summarize-in-one-gemini-call.md)
+- [0003 — 큐레이션 11개 소스 (X 8 + 뉴스레터 3)로 확정](0003-curate-eleven-sources.md)
 
 ## 새 ADR 작성
 

@@ -5,6 +5,7 @@
 ## 인덱스
 
 - [첫 배포 (Bootstrap)](first-deployment.md) — 계정 생성 → 키 발급 → 배포 → smoke test 체크리스트
+- [RSSHub Self-host (Fly.io 30분)](rsshub-self-host.md) — X 8개 채널 안정 운영을 위한 self-host 가이드
 - [Resend 월간 한도 초과](resend-quota-exceeded.md) — 무료 3,000건/월 도달 시
 - [RSSHub 인스턴스 장애](rsshub-down.md) — X/Twitter 소스가 빈 응답·500 반환
 

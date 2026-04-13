@@ -123,17 +123,21 @@ CREATE TABLE IF NOT EXISTS subscribers (
 
 | 분류 | 이름 | type | URL / handle |
 |------|------|------|--------------|
-| 회사 공식 | Anthropic | rss | `https://www.anthropic.com/news/rss.xml` ⚠️ 실제 RSS URL은 구현 시 검증 |
-| 회사 공식 | OpenAI | rss | `https://openai.com/news/rss.xml` ⚠️ |
-| 회사 공식 | Google AI | rss | `https://blog.google/technology/ai/rss/` |
-| AI 매체 | GeekNews | rss | `https://feeds.feedburner.com/geeknews-feed` |
+| X — 회사 공식 | OpenAI | rsshub | `OpenAI` |
+| X — 회사 공식 | OpenAI Developers | rsshub | `OpenAIDevs` |
+| X — 회사 공식 | Google AI | rsshub | `GoogleAI` |
+| X — 회사 공식 | Claude | rsshub | `claudeai` |
+| X — 회사 공식 | Claude Code | rsshub | `claude_code` |
+| X — 매체 | GeekNews | rsshub | `GeekNewsHada` |
+| X — 인플루언서 | Lucas | rsshub | `lucas_flatwhite` |
+| X — 인플루언서 | Journey | rsshub | `atmostbeautiful` |
 | 뉴스레터 | Lenny's Newsletter | rss | `https://www.lennysnewsletter.com/feed` |
+| 뉴스레터 | Sandhill (Ali Afridi) | rss | `https://www.sandhill.io/feed` |
 | 뉴스레터 | Chamath | rss | `https://chamath.substack.com/feed` |
-| 뉴스레터 | Sandhill (Ali Afridi) | rss | `https://www.sandhill.io/rss` ⚠️ RSS 가용성 확인 |
-| X 인플루언서 | Lucas (@lucas_flatwhite) | rsshub | `lucas_flatwhite` |
-| X 인플루언서 | Journey (@atmostbeautiful) | rsshub | `atmostbeautiful` |
 
-> ⚠️ 표시된 RSS URL은 **구현 시 실제 응답 확인 필수**. 공식 RSS가 없으면 RSSHub의 동등한 라우트로 대체.
+> X 8개는 RSSHub 경유. 공개 인스턴스(`rsshub.app`)는 X 차단으로 빈 응답이 잦으므로
+> 운영 안정화 시 RSSHub self-host 필수. `docs/runbooks/rsshub-self-host.md` 참조.
+> `RSSHUB_BASE_URL` 환경변수로 base 도메인 교체 가능 (코드 변경 X).
 
 ### Source 레지스트리 형식
 
