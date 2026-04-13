@@ -46,6 +46,25 @@ function escapeHtml(s) {
     .replaceAll("'", '&#39;')
 }
 
+// title 끝의 ".../…/공백" 같은 잘림 표시 제거
+function cleanTitle(s) {
+  return String(s).replace(/[.…\s]+$/u, '').trim()
+}
+
+// content가 title을 prefix로 시작하면 중복이라 prefix 떼고 본문만 남김.
+// 결과가 의미 있으면 반환, 아니면 빈 문자열.
+function extractBody(title, content) {
+  if (!content) return ''
+  const t = cleanTitle(title)
+  const c = String(content).trim()
+  if (!c) return ''
+  // title이 content의 첫 부분과 거의 같으면 그 부분 제거
+  if (c.startsWith(t)) {
+    return c.slice(t.length).trim()
+  }
+  return c
+}
+
 console.log(`[send-raw] 수집 중... session=${session}`)
 const collected = await collectAll(sources)
 const deduped = dedup(collected)
@@ -88,16 +107,20 @@ if (articles.length === 0) {
 }
 
 const itemsHtml = articles
-  .map(
-    (a, i) => `
-<div style="padding:18px 0;${i > 0 ? 'border-top:1px solid #ececf1;' : ''}">
+  .map((a, i) => {
+    const title = cleanTitle(a.title)
+    const body = extractBody(a.title, a.content)
+    const date = a.publishedAt.toISOString().slice(0, 10)
+    return `
+<div style="padding:22px 0;${i > 0 ? 'border-top:1px solid #ececf1;' : ''}">
+  <div style="font-size:11px;color:#7c3aed;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:8px;">[${escapeHtml(a.source)}] · ${date}</div>
   <a href="${escapeHtml(a.url)}" style="text-decoration:none;color:#1f1d2c;">
-    <div style="font-size:16px;font-weight:600;line-height:1.4;color:#1f1d2c;">${escapeHtml(a.title)}</div>
+    <div style="font-size:17px;font-weight:700;line-height:1.4;color:#1f1d2c;">${escapeHtml(title)}</div>
   </a>
-  <div style="font-size:12px;color:#7c3aed;margin-top:8px;font-weight:600;">[${escapeHtml(a.source)}] ${a.publishedAt.toISOString().slice(0, 10)}</div>
-  <a href="${escapeHtml(a.url)}" style="display:inline-block;font-size:13px;color:#7c3aed;margin-top:6px;text-decoration:none;font-weight:500;">원문 보기 →</a>
-</div>`,
-  )
+  ${body ? `<div style="font-size:14px;color:#3f3d4c;margin-top:10px;line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escapeHtml(body)}</div>` : ''}
+  <a href="${escapeHtml(a.url)}" style="display:inline-block;font-size:13px;color:#7c3aed;margin-top:12px;text-decoration:none;font-weight:600;">원문 보기 →</a>
+</div>`
+  })
   .join('')
 
 const html = `<!doctype html>
