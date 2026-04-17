@@ -6,7 +6,7 @@ function App() {
   const [toast, setToast] = useState(null)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-violet-50 text-slate-900 dark:from-slate-950 dark:to-indigo-950 dark:text-slate-100">
+    <div className="min-h-screen bg-linear-to-b from-white to-violet-50 text-slate-900 dark:from-slate-950 dark:to-indigo-950 dark:text-slate-100">
       <Toast toast={toast} onDismiss={() => setToast(null)} />
 
       <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-6 py-16">
@@ -14,7 +14,7 @@ function App() {
           <p className="mb-3 inline-block rounded-full bg-violet-100 px-3 py-1 text-xs font-medium uppercase tracking-wider text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
             AI 뉴스 큐레이션
           </p>
-          <h1 className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-violet-400 dark:to-indigo-400 sm:text-6xl">
+          <h1 className="bg-linear-to-r from-violet-600 to-indigo-600 bg-clip-text text-5xl font-bold tracking-tight text-transparent dark:from-violet-400 dark:to-indigo-400 sm:text-6xl">
             Digeai
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 sm:text-xl">

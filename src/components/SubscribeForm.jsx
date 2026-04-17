@@ -89,7 +89,7 @@ function SubscribeForm({ onResult }) {
       <button
         type="submit"
         disabled={!canSubmit}
-        className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:from-violet-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900"
+        className="inline-flex items-center justify-center rounded-lg bg-linear-to-r from-violet-600 to-indigo-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:from-violet-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900"
       >
         {loading ? (
           <>
