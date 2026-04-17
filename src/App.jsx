@@ -33,13 +33,13 @@ function App() {
 
         <ul className="mt-10 grid w-full max-w-md grid-cols-1 gap-3 text-sm text-slate-600 dark:text-slate-400 sm:grid-cols-3">
           <li className="rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-center dark:border-slate-800 dark:bg-slate-900/40">
-            🏢 회사 공식 블로그
+            회사 공식 블로그
           </li>
           <li className="rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-center dark:border-slate-800 dark:bg-slate-900/40">
-            ✉️ 큐레이션 뉴스레터
+            큐레이션 뉴스레터
           </li>
           <li className="rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-center dark:border-slate-800 dark:bg-slate-900/40">
-            🐦 AI 인플루언서
+            AI 인플루언서
           </li>
         </ul>
 

@@ -36,7 +36,7 @@ function SubscribeForm({ onResult }) {
       }
 
       if (res.status === 201) {
-        onResult({ variant: 'success', message: body.message ?? '구독이 완료되었습니다 🎉' })
+        onResult({ variant: 'success', message: body.message ?? '구독이 완료되었습니다.' })
         setEmail('')
       } else if (res.status === 400) {
         onResult({ variant: 'error', message: body.error ?? '올바른 이메일 주소를 입력해주세요.' })

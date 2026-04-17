@@ -10,8 +10,8 @@ const TEMPLATE = fs.readFileSync(
 )
 
 const SESSION_META = {
-  morning: { emoji: '🌅', label: '오전' },
-  evening: { emoji: '🌇', label: '오후' },
+  morning: { label: '오전' },
+  evening: { label: '오후' },
 }
 
 function escapeHtml(s) {
@@ -48,7 +48,7 @@ export function renderEmail({ session, date, items, trend }) {
   if (!meta) throw new Error(`알 수 없는 세션: ${session}`)
 
   const dateStr = formatKstDate(date)
-  const subject = `${meta.emoji} [Digeai] ${dateStr} ${meta.label} - AI 뉴스 ${items.length}건`
+  const subject = `[Digeai] ${dateStr} ${meta.label} - AI 뉴스 ${items.length}건`
 
   const itemsHtml = items
     .map(
