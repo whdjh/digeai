@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 /**
  * @param {Object} props
@@ -7,7 +8,7 @@ import { useEffect, useRef } from 'react'
  * @param {React.ReactNode} props.children
  * @param {string} [props.title]
  */
-function SubscribeModal({ open, onClose, title = '뉴스레터 구독', children }) {
+function SubscribeModal({ open, onClose, title = '구독 소스 선택', children }) {
   const cardRef = useRef(null)
   const previouslyFocused = useRef(null)
 
@@ -63,23 +64,20 @@ function SubscribeModal({ open, onClose, title = '뉴스레터 구독', children
     if (e.target === e.currentTarget) onClose()
   }
 
-  return (
+  const content = (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-neutral-950/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 bg-neutral-950/75 backdrop-blur-sm overflow-y-auto"
       onMouseDown={onBackdropMouseDown}
     >
-      <div
-        className="flex min-h-full items-center justify-center p-4"
-        onMouseDown={onBackdropMouseDown}
-      >
+      <div className="flex min-h-full items-stretch justify-center sm:items-center sm:p-4">
         <div
           ref={cardRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="subscribe-modal-title"
-          className="relative w-full max-w-xl rounded-2xl border border-white/10 bg-neutral-950/95 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]"
+          className="relative flex w-full flex-col bg-neutral-950 sm:w-full sm:max-w-xl sm:rounded-2xl sm:border sm:border-white/10 sm:bg-neutral-950/95 sm:shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]"
         >
-          <div className="flex items-center justify-between border-b border-white/6 px-6 py-4">
+          <div className="flex shrink-0 items-center justify-between border-b border-white/6 px-5 py-4 sm:px-6">
             <h2
               id="subscribe-modal-title"
               className="text-[11px] font-semibold tracking-[0.24em] text-neutral-200 uppercase"
@@ -108,13 +106,25 @@ function SubscribeModal({ open, onClose, title = '뉴스레터 구독', children
             </button>
           </div>
 
-          <div className="max-h-[min(70vh,600px)] overflow-y-auto px-6 py-6">
+          <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
             {children}
+          </div>
+
+          <div className="shrink-0 border-t border-white/6 px-5 py-3 sm:px-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex w-full items-center justify-center rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-100 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/40 sm:w-auto"
+            >
+              완료
+            </button>
           </div>
         </div>
       </div>
     </div>
   )
+
+  return createPortal(content, document.body)
 }
 
 export default SubscribeModal

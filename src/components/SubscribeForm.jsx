@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import SourcePicker from './SourcePicker.jsx'
+import SubscribeModal from './SubscribeModal.jsx'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -16,6 +17,7 @@ function SubscribeForm({
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(() => new Set(initialSelected ?? []))
+  const [modalOpen, setModalOpen] = useState(false)
 
   const trimmed = email.trim()
   const isFull = stats?.full === true
@@ -90,14 +92,38 @@ function SubscribeForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
-      <SourcePicker
-        categories={categories}
-        sources={sources}
-        selected={selected}
-        onChange={setSelected}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+      <button
+        type="button"
+        onClick={() => setModalOpen(true)}
         disabled={loading || isFull}
-      />
+        className="group flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm text-neutral-300 backdrop-blur transition hover:border-amber-400/30 hover:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-amber-400/40 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <span className="flex items-center gap-3">
+          <span className="text-[10px] font-semibold tracking-[0.22em] text-amber-300/80 uppercase">
+            선호 소스 선택
+          </span>
+          <span className="font-mono text-xs tabular-nums text-neutral-500">
+            <span className="text-neutral-100">{selected.size}</span>
+            <span className="text-neutral-700">/</span>
+            {sources.length}
+          </span>
+        </span>
+        <svg
+          className="h-3.5 w-3.5 shrink-0 text-neutral-500 transition-transform group-hover:translate-x-0.5"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M1 7h12m0 0L8 2m5 5-5 5"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <label htmlFor="email" className="sr-only">
@@ -181,6 +207,16 @@ function SubscribeForm({
           )}
         </button>
       </div>
+
+      <SubscribeModal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <SourcePicker
+          categories={categories}
+          sources={sources}
+          selected={selected}
+          onChange={setSelected}
+          disabled={loading || isFull}
+        />
+      </SubscribeModal>
     </form>
   )
 }
