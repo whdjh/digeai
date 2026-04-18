@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS subscribers (
 ```sql
 CREATE TABLE IF NOT EXISTS subscriber_sources (
   subscriber_id INTEGER NOT NULL,
-  source_id     TEXT    NOT NULL,       -- pipeline/config/sources.js의 slug
+  source_id     TEXT    NOT NULL,       -- pipeline/config/sources.js의 id
   PRIMARY KEY (subscriber_id, source_id),
   FOREIGN KEY (subscriber_id) REFERENCES subscribers(id) ON DELETE CASCADE
 );
