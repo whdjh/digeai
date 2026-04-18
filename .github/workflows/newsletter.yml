@@ -43,7 +43,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - run: npm ci
+      # npm ci는 lock 파일의 전이 optional dep(platform-specific native binding)을
+      # hard error로 처리하는 알려진 버그가 있어, npm install로 대체. lock 파일은
+      # 여전히 존중하되 mismatched platform은 올바르게 skip.
+      - run: npm install --no-audit --no-fund
 
       # cron 값으로 morning/evening을 결정. workflow_dispatch는 입력값 그대로.
       - name: Determine session
