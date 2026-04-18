@@ -20,6 +20,9 @@
       "Bash(touch:*)",
       "Bash(chmod:*)",
       "Bash(date:*)",
+      "Bash(curl:*)",
+      "Bash(source:*)",
+      "Bash(echo:*)",
       "Edit(src/**)",
       "Edit(pipeline/**)",
       "Edit(netlify/**)",
@@ -45,6 +48,11 @@
     "deny": [
       "Bash(rm -rf:*)",
       "Bash(sudo:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git branch -D:*)",
+      "Bash(npm publish:*)",
       "Read(.env)",
       "Read(.env.local)",
       "Read(.env.production)",
@@ -55,13 +63,7 @@
       "Write(.env.local)",
       "Write(.env.production)"
     ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(git reset --hard:*)",
-      "Bash(npm publish:*)",
-      "Bash(npm install:*)",
-      "Bash(npm uninstall:*)"
-    ]
+    "ask": []
   },
   "hooks": {
     "PreToolUse": [
