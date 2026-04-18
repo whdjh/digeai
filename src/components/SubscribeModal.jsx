@@ -11,6 +11,13 @@ import { createPortal } from 'react-dom'
 function SubscribeModal({ open, onClose, title = '구독 소스 선택', children }) {
   const cardRef = useRef(null)
   const previouslyFocused = useRef(null)
+  const onCloseRef = useRef(onClose)
+
+  // onClose 최신 참조를 ref에 유지 — useEffect deps에서 제외해 부모 리렌더마다
+  // effect가 재실행되면서 포커스·스크롤이 튀는 문제 방지.
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!open) return
@@ -20,7 +27,7 @@ function SubscribeModal({ open, onClose, title = '구독 소스 선택', childre
     function onKey(e) {
       if (e.key === 'Escape') {
         e.preventDefault()
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab' || !cardRef.current) return
@@ -46,7 +53,7 @@ function SubscribeModal({ open, onClose, title = '구독 소스 선택', childre
       const first = cardRef.current.querySelector(
         'input:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
       )
-      first?.focus()
+      first?.focus({ preventScroll: true })
     })
 
     return () => {
@@ -54,9 +61,11 @@ function SubscribeModal({ open, onClose, title = '구독 소스 선택', childre
       cancelAnimationFrame(rafId)
       document.body.style.overflow = ''
       const prev = previouslyFocused.current
-      if (prev && typeof prev.focus === 'function') prev.focus()
+      if (prev && typeof prev.focus === 'function') {
+        prev.focus({ preventScroll: true })
+      }
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
