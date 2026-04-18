@@ -78,6 +78,23 @@ CREATE TABLE IF NOT EXISTS subscribers (
 );
 ```
 
+### subscriber_sources 테이블
+
+구독자별 선호 소스 (N:M 조인).
+
+```sql
+CREATE TABLE IF NOT EXISTS subscriber_sources (
+  subscriber_id INTEGER NOT NULL,
+  source_id     TEXT    NOT NULL,       -- pipeline/config/sources.js의 slug
+  PRIMARY KEY (subscriber_id, source_id),
+  FOREIGN KEY (subscriber_id) REFERENCES subscribers(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriber_sources_source ON subscriber_sources(source_id);
+```
+
+`source_id`는 `pipeline/config/sources.js`의 `id` 필드와 매칭되며, DB에 TEXT로만 저장된다 (sources 테이블은 없음). 폐기된 소스 id는 파이프라인이 자연스럽게 무시한다.
+
 ---
 
 ## Netlify Functions API 명세

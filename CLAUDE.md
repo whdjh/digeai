@@ -199,6 +199,17 @@ CREATE TABLE IF NOT EXISTS subscribers (
 );
 ```
 
+```sql
+CREATE TABLE IF NOT EXISTS subscriber_sources (
+  subscriber_id INTEGER NOT NULL,
+  source_id     TEXT    NOT NULL,
+  PRIMARY KEY (subscriber_id, source_id),
+  FOREIGN KEY (subscriber_id) REFERENCES subscribers(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriber_sources_source ON subscriber_sources(source_id);
+```
+
 Netlify Functions과 파이프라인 모두 `@libsql/client` 패키지로 접근한다.
 `TURSO_DATABASE_URL`과 `TURSO_AUTH_TOKEN`으로 인증한다.
 
