@@ -67,8 +67,9 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-          RSSHUB_BASE_URL: ${{ secrets.RSSHUB_BASE_URL }}    # optional
-          MAIL_FROM: ${{ secrets.MAIL_FROM }}                # optional
+          RSSHUB_BASE_URL: ${{ secrets.RSSHUB_BASE_URL }}       # optional (self-host)
+          RSSHUB_ACCESS_KEY: ${{ secrets.RSSHUB_ACCESS_KEY }}   # optional (self-host 인증)
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}                   # optional
 
       - name: Failure summary
         if: failure()
