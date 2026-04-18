@@ -2,9 +2,14 @@ import { useEffect } from 'react'
 
 const VARIANT_STYLES = {
   success:
-    'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200',
+    'border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-100 shadow-[0_10px_40px_-10px_rgb(16_185_129/0.4)]',
   error:
-    'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200',
+    'border-rose-400/20 bg-rose-400/[0.06] text-rose-100 shadow-[0_10px_40px_-10px_rgb(244_63_94/0.4)]',
+}
+
+const VARIANT_ACCENT = {
+  success: 'bg-emerald-400',
+  error: 'bg-rose-400',
 }
 
 function Toast({ toast, onDismiss }) {
@@ -17,6 +22,7 @@ function Toast({ toast, onDismiss }) {
   if (!toast) return null
 
   const styles = VARIANT_STYLES[toast.variant] ?? VARIANT_STYLES.error
+  const accent = VARIANT_ACCENT[toast.variant] ?? VARIANT_ACCENT.error
 
   return (
     <div
@@ -25,17 +31,18 @@ function Toast({ toast, onDismiss }) {
       className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 sm:top-6"
     >
       <div
-        className={`flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur ${styles}`}
+        className={`fade-up flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border px-4 py-3 backdrop-blur-xl ${styles}`}
       >
+        <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${accent}`} />
         <p className="flex-1 text-sm font-medium">{toast.message}</p>
         <button
           type="button"
           onClick={onDismiss}
           aria-label="닫기"
-          className="-mr-1 -mt-1 rounded-md p-1 text-current opacity-70 transition hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40"
+          className="-mr-1 -mt-1 rounded-md p-1 text-current opacity-60 transition hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40"
         >
           <svg
-            className="h-4 w-4"
+            className="h-3.5 w-3.5"
             viewBox="0 0 20 20"
             fill="currentColor"
             aria-hidden="true"

@@ -71,40 +71,45 @@ function SubscribeForm({ onResult, stats, onStatsChange }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row" noValidate>
       <label htmlFor="email" className="sr-only">
         이메일 주소
       </label>
-      <input
-        id="email"
-        type="email"
-        autoComplete="email"
-        inputMode="email"
-        placeholder="your@email.com"
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value)
-          if (error) setError('')
-        }}
-        disabled={loading || isFull}
-        aria-invalid={error ? 'true' : 'false'}
-        aria-describedby={error ? 'email-error' : undefined}
-        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-violet-400"
-      />
-      {error && (
-        <p id="email-error" className="text-sm text-rose-600 dark:text-rose-400">
-          {error}
-        </p>
-      )}
+      <div className="relative flex-1">
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          placeholder="your@email.com"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value)
+            if (error) setError('')
+          }}
+          disabled={loading || isFull}
+          aria-invalid={error ? 'true' : 'false'}
+          aria-describedby={error ? 'email-error' : undefined}
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-base text-white placeholder:text-neutral-600 outline-none backdrop-blur transition focus:border-amber-400/50 focus:bg-white/[0.05] focus:ring-2 focus:ring-amber-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        {error && (
+          <p
+            id="email-error"
+            className="absolute -bottom-6 left-0 text-xs text-rose-300/90"
+          >
+            {error}
+          </p>
+        )}
+      </div>
       <button
         type="submit"
         disabled={!canSubmit}
-        className="inline-flex items-center justify-center rounded-lg bg-linear-to-r from-violet-600 to-indigo-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:from-violet-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900"
+        className="group inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-5 py-3.5 text-sm font-semibold tracking-tight text-neutral-950 shadow-[0_0_0_1px_rgb(245_158_11/0.3),0_10px_30px_-10px_rgb(245_158_11/0.45)] transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:ring-offset-2 focus:ring-offset-neutral-950 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
       >
         {loading ? (
           <>
             <svg
-              className="mr-2 h-5 w-5 animate-spin"
+              className="h-4 w-4 animate-spin"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
@@ -123,12 +128,28 @@ function SubscribeForm({ onResult, stats, onStatsChange }) {
                 d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
               />
             </svg>
-            구독 중...
+            전송 중
           </>
         ) : isFull ? (
           '모집 마감'
         ) : (
-          '구독하기'
+          <>
+            구독하기
+            <svg
+              className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+              viewBox="0 0 14 14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M1 7h12m0 0L8 2m5 5-5 5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </>
         )}
       </button>
     </form>
