@@ -104,9 +104,30 @@ async function callGemini(ai, articles) {
 }
 
 /**
- * @typedef {{ title: string, url: string, summary: string }} SummarizedItem
+ * @typedef {{ title: string, url: string, summary: string, engineeringRelevance?: number, sourceId?: string, source?: string }} SummarizedItem
  * @typedef {{ items: SummarizedItem[], trend: string }} SummaryResult
  */
+
+/**
+ * Gemini 응답은 title/url/summary/engineeringRelevance만 포함한다.
+ * Task 5 (구독자별 필터) 동작을 위해 sourceId/source를 url 매칭으로 재주입한다.
+ *
+ * @param {SummarizedItem[]} items
+ * @param {import('./lib/article.js').Article[]} articles
+ * @returns {SummarizedItem[]}
+ */
+function reattachSourceMeta(items, articles) {
+  const byUrl = new Map(articles.map((a) => [a.url, a]))
+  return items.map((it) => {
+    const matched = byUrl.get(it.url)
+    if (!matched) return it
+    return {
+      ...it,
+      sourceId: matched.sourceId,
+      source: matched.source,
+    }
+  })
+}
 
 /**
  * @param {import('./lib/article.js').Article[]} articles
@@ -119,7 +140,8 @@ export async function summarize(articles) {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
   if (articles.length <= CHUNK_SIZE) {
-    return await callGemini(ai, articles)
+    const result = await callGemini(ai, articles)
+    return { items: reattachSourceMeta(result.items, articles), trend: result.trend }
   }
 
   // 30개 초과: 청크 단위로 호출, items는 머지, trend는 마지막 것
@@ -131,5 +153,5 @@ export async function summarize(articles) {
     allItems.push(...result.items)
     trend = result.trend
   }
-  return { items: allItems, trend }
+  return { items: reattachSourceMeta(allItems, articles), trend }
 }
