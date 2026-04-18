@@ -83,9 +83,10 @@ function isUniqueViolation(err) {
 }
 
 // enabled=true인 sources.js id 집합. 요청 검증용.
-function getValidSourceIdSet() {
-  return new Set(sourceRegistry.filter((s) => s.enabled).map((s) => s.id))
-}
+// 모듈 스코프 — cold start 1회 계산, sourceRegistry가 런타임 불변이라 안전.
+const VALID_SOURCE_IDS = new Set(
+  sourceRegistry.filter((s) => s.enabled).map((s) => s.id),
+)
 
 export default async (req, context) => {
   const origin = req.headers.get('origin')
@@ -135,7 +136,6 @@ export default async (req, context) => {
     return jsonResponse({ error: '선택한 소스가 너무 많습니다.' }, 400, cors)
   }
 
-  const validSet = getValidSourceIdSet()
   const uniqueIds = [
     ...new Set(
       rawIds
@@ -151,7 +151,7 @@ export default async (req, context) => {
       cors,
     )
   }
-  const invalid = uniqueIds.filter((id) => !validSet.has(id))
+  const invalid = uniqueIds.filter((id) => !VALID_SOURCE_IDS.has(id))
   if (invalid.length > 0) {
     console.error('[subscribe] 알 수 없는 source_id:', { ip, invalid })
     return jsonResponse({ error: '선택한 소스가 올바르지 않습니다.' }, 400, cors)
