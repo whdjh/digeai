@@ -1,4 +1,4 @@
-// POST /api/subscribe — 구독자 이메일 등록.
+// POST /api/subscribe — 구독자 이메일 + 선호 소스 등록.
 // Netlify Functions v2 (Web Request/Response API).
 //
 // 보안:
@@ -8,11 +8,13 @@
 //   - 매 요청마다 DB 클라이언트 init + finally close (CLAUDE.md 컨벤션)
 
 import { createClient } from '@libsql/client'
+import { sources as sourceRegistry } from '../../pipeline/config/sources.js'
 
 const ALLOWED_ORIGINS_BASE = ['http://localhost:8888', 'http://localhost:5173']
 const RATE_LIMIT = { max: 5, windowMs: 60_000 }
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const DEFAULT_CAPACITY = 45
+const MAX_SOURCE_IDS = 50   // sanity — 현재 20개 + 여유
 
 function getCapacity() {
   const raw = Number(process.env.MAX_SUBSCRIBERS)
@@ -80,11 +82,15 @@ function isUniqueViolation(err) {
   return /UNIQUE/i.test(msg) || /SQLITE_CONSTRAINT/i.test(msg) || /SQLITE_CONSTRAINT/i.test(code)
 }
 
+// enabled=true인 sources.js id 집합. 요청 검증용.
+function getValidSourceIdSet() {
+  return new Set(sourceRegistry.filter((s) => s.enabled).map((s) => s.id))
+}
+
 export default async (req, context) => {
   const origin = req.headers.get('origin')
   const cors = corsHeaders(origin)
 
-  // CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: cors })
   }
@@ -93,7 +99,6 @@ export default async (req, context) => {
     return jsonResponse({ error: 'Method not allowed.' }, 405, cors)
   }
 
-  // Rate limit (cheap → 가장 먼저)
   const ip = getClientIp(req, context)
   if (!checkRateLimit(ip)) {
     return jsonResponse(
@@ -103,22 +108,56 @@ export default async (req, context) => {
     )
   }
 
-  // Parse body
   let body
   try {
     body = await req.json()
   } catch {
-    return jsonResponse({ error: '올바른 이메일 주소를 입력해주세요.' }, 400, cors)
+    return jsonResponse({ error: '올바른 요청이 아닙니다.' }, 400, cors)
   }
 
-  // Validate email
+  // 이메일 검증
   const raw = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
   const local = raw.split('@')[0] ?? ''
   if (!raw || !EMAIL_RE.test(raw) || raw.length > 254 || local.length > 64) {
     return jsonResponse({ error: '올바른 이메일 주소를 입력해주세요.' }, 400, cors)
   }
 
-  // DB env check
+  // source_ids 검증
+  const rawIds = body?.source_ids
+  if (!Array.isArray(rawIds) || rawIds.length === 0) {
+    return jsonResponse(
+      { error: '구독할 소스를 최소 1개 이상 선택해주세요.' },
+      400,
+      cors,
+    )
+  }
+  if (rawIds.length > MAX_SOURCE_IDS) {
+    return jsonResponse({ error: '선택한 소스가 너무 많습니다.' }, 400, cors)
+  }
+
+  const validSet = getValidSourceIdSet()
+  const uniqueIds = [
+    ...new Set(
+      rawIds
+        .filter((x) => typeof x === 'string')
+        .map((x) => x.trim())
+        .filter((x) => x.length > 0),
+    ),
+  ]
+  if (uniqueIds.length === 0) {
+    return jsonResponse(
+      { error: '구독할 소스를 최소 1개 이상 선택해주세요.' },
+      400,
+      cors,
+    )
+  }
+  const invalid = uniqueIds.filter((id) => !validSet.has(id))
+  if (invalid.length > 0) {
+    console.error('[subscribe] 알 수 없는 source_id:', { ip, invalid })
+    return jsonResponse({ error: '선택한 소스가 올바르지 않습니다.' }, 400, cors)
+  }
+
+  // DB env
   if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
     console.error('[subscribe] TURSO env 누락', {
       ip,
@@ -137,7 +176,6 @@ export default async (req, context) => {
   })
 
   try {
-    // Capacity 체크 — Resend 무료 3,000건/월 고려한 상한 (기본 45명)
     const capacity = getCapacity()
     const countRes = await client.execute('SELECT COUNT(*) AS count FROM subscribers')
     const rawCount = countRes.rows?.[0]?.count
@@ -151,11 +189,35 @@ export default async (req, context) => {
       )
     }
 
-    await client.execute({
-      sql: 'INSERT INTO subscribers(email) VALUES (?)',
-      args: [raw],
-    })
-    console.log(`[subscribe] 신규 구독: ${maskEmail(raw)} ip=${ip} (${currentCount + 1}/${capacity})`)
+    // 트랜잭션: subscribers INSERT → subscriber_sources INSERT × N
+    const tx = await client.transaction('write')
+    try {
+      const insertRes = await tx.execute({
+        sql: 'INSERT INTO subscribers(email) VALUES (?)',
+        args: [raw],
+      })
+      const subscriberId = insertRes.lastInsertRowid
+      if (subscriberId == null) {
+        throw new Error('subscribers INSERT lastInsertRowid 없음')
+      }
+      const sidNum = typeof subscriberId === 'bigint' ? Number(subscriberId) : subscriberId
+
+      for (const sid of uniqueIds) {
+        await tx.execute({
+          sql: 'INSERT INTO subscriber_sources(subscriber_id, source_id) VALUES (?, ?)',
+          args: [sidNum, sid],
+        })
+      }
+
+      await tx.commit()
+    } catch (err) {
+      await tx.rollback()
+      throw err
+    }
+
+    console.log(
+      `[subscribe] 신규 구독: ${maskEmail(raw)} sources=${uniqueIds.length} ip=${ip} (${currentCount + 1}/${capacity})`,
+    )
     return jsonResponse({ message: '구독이 완료되었습니다.' }, 201, cors)
   } catch (err) {
     if (isUniqueViolation(err)) {
