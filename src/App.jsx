@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import SubscribeForm from './components/SubscribeForm.jsx'
 import Toast from './components/Toast.jsx'
 import Countdown from './components/Countdown.jsx'
@@ -8,9 +8,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 function App() {
   const [toast, setToast] = useState(null)
   const [stats, setStats] = useState(null)
+  const [sourceData, setSourceData] = useState(null) // { categories, sources }
+  const [sourceError, setSourceError] = useState(false)
 
   useEffect(() => {
     let cancelled = false
+
     async function loadStats() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/stats`)
@@ -18,10 +21,24 @@ function App() {
         const body = await res.json()
         if (!cancelled) setStats(body)
       } catch {
-        // 통계는 선택적 — 실패해도 폼은 정상 동작
+        // 통계는 선택적
       }
     }
+
+    async function loadSources() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/sources`)
+        if (!res.ok) throw new Error('sources fetch failed')
+        const body = await res.json()
+        if (!cancelled) setSourceData(body)
+      } catch {
+        if (!cancelled) setSourceError(true)
+      }
+    }
+
     loadStats()
+    loadSources()
+
     return () => {
       cancelled = true
     }
@@ -33,6 +50,12 @@ function App() {
   const capacity = stats?.capacity ?? 0
   const isFull = stats?.full === true
   const percent = capacity > 0 ? Math.min(100, Math.round((count / capacity) * 100)) : 0
+
+  const sourceCount = sourceData?.sources?.length ?? 0
+  const initialSelected = useMemo(() => {
+    if (!sourceData) return []
+    return sourceData.sources.filter((s) => s.defaultChecked).map((s) => s.id)
+  }, [sourceData])
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-neutral-950">
@@ -65,23 +88,39 @@ function App() {
             </h1>
 
             <p className="mt-7 max-w-lg text-[15px] leading-relaxed text-neutral-400">
-              GeekNews · Reddit · 주요 연구자 X 계정에서 엄선한 AI 소식을{' '}
-              <strong className="font-medium text-neutral-200">
-                Gemini 2.5 Flash
-              </strong>
-              로 요약해{' '}
-              <strong className="font-medium text-neutral-200">
-                오전 8시 · 오후 5시 KST
-              </strong>
-              에 이메일로 전달합니다.
+              {sourceCount > 0 ? (
+                <>
+                  <strong className="font-medium text-neutral-200">{sourceCount}개</strong>의
+                  큐레이션 소스 중 원하는 것을 골라{' '}
+                </>
+              ) : (
+                '큐레이션된 AI 소식을 '
+              )}
+              <strong className="font-medium text-neutral-200">Gemini 2.5 Flash</strong>로
+              요약해{' '}
+              <strong className="font-medium text-neutral-200">오전 8시 · 오후 5시 KST</strong>에
+              이메일로 전달합니다.
             </p>
 
-            <div className="mt-10 max-w-lg">
-              <SubscribeForm
-                onResult={setToast}
-                stats={stats}
-                onStatsChange={setStats}
-              />
+            <div className="mt-10 max-w-xl">
+              {sourceError ? (
+                <div className="rounded-xl border border-rose-400/30 bg-rose-500/5 p-5 text-sm text-rose-200">
+                  소스 목록을 불러오지 못했습니다. 새로고침해주세요.
+                </div>
+              ) : !sourceData ? (
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5 text-sm text-neutral-500">
+                  소스 목록을 불러오는 중…
+                </div>
+              ) : (
+                <SubscribeForm
+                  onResult={setToast}
+                  stats={stats}
+                  onStatsChange={setStats}
+                  sources={sourceData.sources}
+                  categories={sourceData.categories}
+                  initialSelected={initialSelected}
+                />
+              )}
             </div>
 
             {stats && (
@@ -133,13 +172,13 @@ function App() {
                 {[
                   {
                     n: '01',
-                    title: '수집',
-                    desc: '11개 큐레이션 소스에서 신규 아티클 가져오기',
+                    title: '선택',
+                    desc: '관심 있는 소스만 체크박스로 고르기',
                   },
                   {
                     n: '02',
                     title: '요약',
-                    desc: 'Gemini 2.5 Flash로 2 ~ 3문장 한글 요약',
+                    desc: 'Gemini 2.5 Flash로 2~3문장 한글 요약',
                   },
                   {
                     n: '03',
