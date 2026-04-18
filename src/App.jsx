@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import SubscribeForm from './components/SubscribeForm.jsx'
+import SubscribeModal from './components/SubscribeModal.jsx'
 import Toast from './components/Toast.jsx'
 import Countdown from './components/Countdown.jsx'
 
@@ -10,6 +11,12 @@ function App() {
   const [stats, setStats] = useState(null)
   const [sourceData, setSourceData] = useState(null) // { categories, sources }
   const [sourceError, setSourceError] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  function handleResult(result) {
+    setToast(result)
+    if (result?.variant === 'success') setModalOpen(false)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -112,14 +119,49 @@ function App() {
                   소스 목록을 불러오는 중…
                 </div>
               ) : (
-                <SubscribeForm
-                  onResult={setToast}
-                  stats={stats}
-                  onStatsChange={setStats}
-                  sources={sourceData.sources}
-                  categories={sourceData.categories}
-                  initialSelected={initialSelected}
-                />
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(true)}
+                    disabled={isFull}
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 py-4 text-sm font-semibold tracking-tight text-neutral-950 shadow-[0_0_0_1px_rgb(245_158_11/0.3),0_10px_30px_-10px_rgb(245_158_11/0.45)] transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:ring-offset-2 focus:ring-offset-neutral-950 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                  >
+                    {isFull ? (
+                      '모집 마감'
+                    ) : (
+                      <>
+                        구독하기
+                        <svg
+                          className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                          viewBox="0 0 14 14"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M1 7h12m0 0L8 2m5 5-5 5"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                  <SubscribeModal
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                  >
+                    <SubscribeForm
+                      onResult={handleResult}
+                      stats={stats}
+                      onStatsChange={setStats}
+                      sources={sourceData.sources}
+                      categories={sourceData.categories}
+                      initialSelected={initialSelected}
+                    />
+                  </SubscribeModal>
+                </>
               )}
             </div>
 
