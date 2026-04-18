@@ -12,6 +12,12 @@ import { createClient } from '@libsql/client'
 const ALLOWED_ORIGINS_BASE = ['http://localhost:8888', 'http://localhost:5173']
 const RATE_LIMIT = { max: 5, windowMs: 60_000 }
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const DEFAULT_CAPACITY = 45
+
+function getCapacity() {
+  const raw = Number(process.env.MAX_SUBSCRIBERS)
+  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : DEFAULT_CAPACITY
+}
 
 // 모듈 스코프 in-memory rate limit map. cold start마다 리셋.
 const rateLimitMap = new Map()
@@ -131,11 +137,25 @@ export default async (req, context) => {
   })
 
   try {
+    // Capacity 체크 — Resend 무료 3,000건/월 고려한 상한 (기본 45명)
+    const capacity = getCapacity()
+    const countRes = await client.execute('SELECT COUNT(*) AS count FROM subscribers')
+    const rawCount = countRes.rows?.[0]?.count
+    const currentCount =
+      typeof rawCount === 'bigint' ? Number(rawCount) : Number(rawCount ?? 0)
+    if (currentCount >= capacity) {
+      return jsonResponse(
+        { error: '현재 구독자가 모두 찼습니다. 다음 기회를 기다려주세요.' },
+        403,
+        cors,
+      )
+    }
+
     await client.execute({
       sql: 'INSERT INTO subscribers(email) VALUES (?)',
       args: [raw],
     })
-    console.log(`[subscribe] 신규 구독: ${maskEmail(raw)} ip=${ip}`)
+    console.log(`[subscribe] 신규 구독: ${maskEmail(raw)} ip=${ip} (${currentCount + 1}/${capacity})`)
     return jsonResponse({ message: '구독이 완료되었습니다.' }, 201, cors)
   } catch (err) {
     if (isUniqueViolation(err)) {

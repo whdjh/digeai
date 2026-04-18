@@ -3,17 +3,20 @@ import { useState } from 'react'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
-function SubscribeForm({ onResult }) {
+function SubscribeForm({ onResult, stats, onStatsChange }) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const trimmed = email.trim()
-  const canSubmit = trimmed.length > 0 && !loading
+  const isFull = stats?.full === true
+  const canSubmit = trimmed.length > 0 && !loading && !isFull
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+
+    if (isFull) return
 
     if (!EMAIL_RE.test(trimmed) || trimmed.length > 254) {
       setError('올바른 이메일 주소를 입력해주세요.')
@@ -38,8 +41,15 @@ function SubscribeForm({ onResult }) {
       if (res.status === 201) {
         onResult({ variant: 'success', message: body.message ?? '구독이 완료되었습니다.' })
         setEmail('')
+        onStatsChange?.((s) => (s ? { ...s, count: s.count + 1, full: s.count + 1 >= s.capacity } : s))
       } else if (res.status === 400) {
         onResult({ variant: 'error', message: body.error ?? '올바른 이메일 주소를 입력해주세요.' })
+      } else if (res.status === 403) {
+        onResult({
+          variant: 'error',
+          message: body.error ?? '현재 구독자가 모두 찼습니다. 다음 기회를 기다려주세요.',
+        })
+        onStatsChange?.((s) => (s ? { ...s, full: true } : s))
       } else if (res.status === 409) {
         onResult({ variant: 'error', message: body.error ?? '이미 구독 중인 이메일입니다.' })
       } else if (res.status === 429) {
@@ -76,7 +86,7 @@ function SubscribeForm({ onResult }) {
           setEmail(e.target.value)
           if (error) setError('')
         }}
-        disabled={loading}
+        disabled={loading || isFull}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? 'email-error' : undefined}
         className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-violet-400"
@@ -115,6 +125,8 @@ function SubscribeForm({ onResult }) {
             </svg>
             구독 중...
           </>
+        ) : isFull ? (
+          '모집 마감'
         ) : (
           '구독하기'
         )}
