@@ -4,6 +4,7 @@
 
 import { GoogleGenAI, Type } from '@google/genai'
 import { retry } from './lib/retry.js'
+import { normalizeUrl } from './lib/url.js'
 
 // Gemini는 특정 모델이 일시적으로 503 UNAVAILABLE("high demand")인 경우가 잦음.
 // 첫 모델이 5회 retry 후에도 503/429면 다음 모델로 자동 fallback.
@@ -117,16 +118,27 @@ async function callGemini(ai, articles) {
  * @returns {SummarizedItem[]}
  */
 function reattachSourceMeta(items, articles) {
-  const byUrl = new Map(articles.map((a) => [a.url, a]))
-  return items.map((it) => {
-    const matched = byUrl.get(it.url)
-    if (!matched) return it
+  // normalizeUrl로 양쪽 정규화 — Gemini가 trailing slash/case 등을 변형해도 매칭 안정.
+  const byUrl = new Map(articles.map((a) => [normalizeUrl(a.url), a]))
+  let unmatched = 0
+  const out = items.map((it) => {
+    const matched = byUrl.get(normalizeUrl(it.url))
+    if (!matched) {
+      unmatched++
+      return it
+    }
     return {
       ...it,
       sourceId: matched.sourceId,
       source: matched.source,
     }
   })
+  if (unmatched > 0) {
+    console.warn(
+      `[summarize] reattach 실패 ${unmatched}건 — sourceId 누락으로 모든 구독자 필터에서 제외됨`,
+    )
+  }
+  return out
 }
 
 /**

@@ -145,30 +145,37 @@ async function main() {
   const skippedEmpty = []
 
   await pool(recipients, SEND_CONCURRENCY, async (subscriber) => {
-    const myItems = keptItems.filter((it) => subscriber.sourceIds.has(it.sourceId))
-    if (myItems.length === 0) {
-      skippedEmpty.push(subscriber.email)
-      return
+    // 한 구독자 처리 실패가 전체 pool을 죽이지 않도록 격리.
+    // personalize()가 유료 전환 시 Gemini 호출로 바뀌면 예외 가능성 생김.
+    try {
+      const myItems = keptItems.filter((it) => subscriber.sourceIds.has(it.sourceId))
+      if (myItems.length === 0) {
+        skippedEmpty.push(subscriber.email)
+        return
+      }
+
+      const personalized = await personalize(myItems, subscriber)
+
+      const { subject, html } = renderEmail({
+        session,
+        date: now,
+        items: personalized,
+        trend: summary.trend,
+      })
+
+      const res = await sendOne({
+        to: subscriber.email,
+        subject,
+        html,
+        session,
+        date: now,
+      })
+      if (res.ok) sent++
+      else failed.push(subscriber.email)
+    } catch (err) {
+      console.error(`[${subscriber.email}] 구독자 처리 예외:`, err?.message ?? err)
+      failed.push(subscriber.email)
     }
-
-    const personalized = await personalize(myItems, subscriber)
-
-    const { subject, html } = renderEmail({
-      session,
-      date: now,
-      items: personalized,
-      trend: summary.trend,
-    })
-
-    const res = await sendOne({
-      to: subscriber.email,
-      subject,
-      html,
-      session,
-      date: now,
-    })
-    if (res.ok) sent++
-    else failed.push(subscriber.email)
   })
 
   const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1)
