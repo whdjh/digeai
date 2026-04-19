@@ -7,7 +7,7 @@ import { retry } from '../lib/retry.js'
 import { normalizeArticle } from '../lib/article.js'
 
 const parser = new Parser({
-  timeout: 15000,
+  timeout: 30000,
   headers: { 'User-Agent': 'digeai-bot/1.0 (+https://digeai.com)' },
 })
 

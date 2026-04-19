@@ -6,8 +6,10 @@ import Parser from 'rss-parser'
 import { retry } from '../lib/retry.js'
 import { normalizeArticle } from '../lib/article.js'
 
+// rsshub.app 공개 인스턴스는 업스트림(특히 X/Twitter) 지연이 잦아 15s 로는 잦은 timeout.
+// 30s 로 상향 — retry 3회 × 30s 가 병렬 실행이라 전체 파이프라인 영향은 ~90s.
 const parser = new Parser({
-  timeout: 15000,
+  timeout: 30000,
   headers: { 'User-Agent': 'digeai-bot/1.0 (+https://digeai.com)' },
 })
 const BASE_URL = (process.env.RSSHUB_BASE_URL ?? 'https://rsshub.app').replace(/\/$/, '')
