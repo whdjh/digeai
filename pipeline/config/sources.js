@@ -124,4 +124,93 @@ export const sources = [
     defaultChecked: false,
     enabled: true,
   },
+
+  // === AI·테크 미디어 (신규) ===
+  {
+    id: 'hn',
+    type: 'rss', url: 'https://news.ycombinator.com/rss',
+    name: 'Hacker News',
+    category: 'ai-media',
+    description: 'YC 운영 테크·스타트업 소셜 뉴스',
+    defaultChecked: false,
+    enabled: true,
+  },
+  {
+    id: 'techmeme',
+    type: 'rss', url: 'https://www.techmeme.com/feed.xml',
+    name: 'Techmeme',
+    category: 'ai-media',
+    description: '테크 뉴스 실시간 애그리게이터',
+    defaultChecked: false,
+    enabled: true,
+  },
+
+  // === 커뮤니티 (신규) ===
+  {
+    id: 'reddit-claudecode',
+    type: 'rss', url: 'https://www.reddit.com/r/ClaudeCode/.rss',
+    name: 'r/ClaudeCode',
+    category: 'community',
+    description: 'Claude Code 실전 사용 후기·팁',
+    defaultChecked: false,
+    enabled: true,
+  },
+  {
+    id: 'threads-choi',
+    type: 'rsshub', handle: 'choi.openai', route: 'threads',
+    name: 'Threads: @choi.openai',
+    category: 'community',
+    description: 'OpenAI 직원 한국어 관점 스레드',
+    defaultChecked: false,
+    enabled: true,
+  },
+
+  // === 테크 애널리스트 (신규) ===
+  {
+    id: 'benedict-evans',
+    type: 'rss', url: 'https://www.ben-evans.com/benedictevans?format=rss',
+    name: 'Benedict Evans',
+    category: 'tech-analyst',
+    description: '테크·미디어 장기 트렌드 주간 뉴스레터',
+    defaultChecked: false,
+    enabled: true,
+  },
+  {
+    id: 'platformer',
+    type: 'rss', url: 'https://www.platformer.news/feed',
+    name: 'Platformer',
+    category: 'tech-analyst',
+    description: '빅테크와 민주주의·정책 교차점 (Casey Newton)',
+    defaultChecked: false,
+    enabled: true,
+  },
+  {
+    id: 'the-generalist',
+    type: 'rss', url: 'https://www.generalist.com/feed',
+    name: 'The Generalist',
+    category: 'tech-analyst',
+    description: 'VC·기업 심층 분석 롱폼',
+    defaultChecked: false,
+    enabled: true,
+  },
+  {
+    id: 'stratechery',
+    type: 'rss', url: 'https://stratechery.com/feed/',
+    name: 'Stratechery',
+    category: 'tech-analyst',
+    description: 'Ben Thompson의 빅테크 전략 분석 (무료 weekly)',
+    defaultChecked: false,
+    enabled: true,
+  },
+
+  // === 뉴스레터·PM (신규) ===
+  {
+    id: 'second-brush',
+    type: 'rss', url: 'https://blog.secondbrush.co.kr/rss/',
+    name: 'Second Brush (데일리 프롬프트)',
+    category: 'newsletter',
+    description: '매일 받는 프롬프트 큐레이션',
+    defaultChecked: false,
+    enabled: true,
+  },
 ]

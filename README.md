@@ -6,7 +6,9 @@ AI 뉴스 자동 수집 → 요약 → 이메일 발송 서비스.
 
 ## 수집 소스
 
-**X (Twitter)** — RSSHub self-host 경유
+총 **20개 큐레이션 소스** (AI 공식 X · 커뮤니티 · AI·테크 미디어 · 테크 애널리스트 · 뉴스레터). 상세 목록은 [`SPEC.md`](./SPEC.md#수집-소스) 참조.
+
+**X / Threads** — RSSHub self-host 경유
 
 | 분류 | 이름 | handle |
 |------|------|--------|
@@ -18,14 +20,23 @@ AI 뉴스 자동 수집 → 요약 → 이메일 발송 서비스.
 | 매체 | GeekNews | `GeekNewsHada` |
 | 인플루언서 | Lucas | `lucas_flatwhite` |
 | 인플루언서 | Journey | `atmostbeautiful` |
+| 커뮤니티 | Threads @choi.openai | `choi.openai` (route: threads) |
 
-**뉴스레터** — RSS
+**RSS**
 
-| 이름 | URL |
-|------|-----|
-| Lenny's Newsletter | lennysnewsletter.com |
-| Sandhill (Ali Afridi) | sandhill.io |
-| Chamath | chamath.substack.com |
+| 분류 | 이름 | URL |
+|------|------|-----|
+| 뉴스레터 | Lenny's Newsletter | lennysnewsletter.com |
+| 뉴스레터 | Sandhill (Ali Afridi) | sandhill.io |
+| 뉴스레터 | Chamath | chamath.substack.com |
+| 뉴스레터 | Second Brush (데일리 프롬프트) | blog.secondbrush.co.kr |
+| 커뮤니티 | r/ClaudeCode | reddit.com/r/ClaudeCode |
+| AI 미디어 | Hacker News | news.ycombinator.com |
+| AI 미디어 | Techmeme | techmeme.com |
+| 테크 애널리스트 | Benedict Evans | ben-evans.com |
+| 테크 애널리스트 | Platformer | platformer.news |
+| 테크 애널리스트 | The Generalist | readthegeneralist.com |
+| 테크 애널리스트 | Stratechery | stratechery.com |
 
 ## 기술 스택
 
@@ -73,7 +84,7 @@ MAIL_FROM=                                # 발신 이메일 주소
 ## 파이프라인 흐름
 
 ```
-수집 (11개 소스) → 중복 제거 → 노이즈 필터 → 세션 윈도우 필터
+수집 (20개 소스) → 중복 제거 → 노이즈 필터 → 세션 윈도우 필터
 → 다양성 보정 → Gemini 요약 → 관련성 필터 → 이메일 렌더 → 발송
 ```
 

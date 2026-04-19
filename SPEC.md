@@ -138,19 +138,28 @@ CREATE INDEX IF NOT EXISTS idx_subscriber_sources_source ON subscriber_sources(s
 큐레이션된 소스만 사용하므로 별도 키워드 필터링 없이 **전부 수집 → 중복 제거 → 요약**.
 새로운 소스 추가는 `pipeline/config/sources.js` 한 파일만 수정하면 된다.
 
-| 분류 | 이름 | type | URL / handle |
-|------|------|------|--------------|
-| X — 회사 공식 | OpenAI | rsshub | `OpenAI` |
-| X — 회사 공식 | OpenAI Developers | rsshub | `OpenAIDevs` |
-| X — 회사 공식 | Google AI | rsshub | `GoogleAI` |
-| X — 회사 공식 | Claude | rsshub | `claudeai` |
-| X — 회사 공식 | Claude Code | rsshub | `claude_code` |
-| X — 매체 | GeekNews | rsshub | `GeekNewsHada` |
-| X — 인플루언서 | Lucas | rsshub | `lucas_flatwhite` |
-| X — 인플루언서 | Journey | rsshub | `atmostbeautiful` |
-| 뉴스레터 | Lenny's Newsletter | rss | `https://www.lennysnewsletter.com/feed` |
-| 뉴스레터 | Sandhill (Ali Afridi) | rss | `https://www.sandhill.io/feed` |
-| 뉴스레터 | Chamath | rss | `https://chamath.substack.com/feed` |
+| 분류 | id | 이름 | type | URL / handle |
+|------|----|------|------|--------------|
+| X — 회사 공식 | openai | OpenAI | rsshub | `OpenAI` |
+| X — 회사 공식 | openai-devs | OpenAI Developers | rsshub | `OpenAIDevs` |
+| X — 회사 공식 | google-ai | Google AI | rsshub | `GoogleAI` |
+| X — 회사 공식 | claude | Claude | rsshub | `claudeai` |
+| X — 회사 공식 | claude-code | Claude Code | rsshub | `claude_code` |
+| X — 매체 | geeknews | GeekNews | rsshub | `GeekNewsHada` |
+| X — 인플루언서 | lucas | Lucas | rsshub | `lucas_flatwhite` |
+| X — 인플루언서 | journey | Journey | rsshub | `atmostbeautiful` |
+| 뉴스레터 | lennys | Lenny's Newsletter | rss | `https://www.lennysnewsletter.com/feed` |
+| 뉴스레터 | sandhill | Sandhill (Ali Afridi) | rss | `https://www.sandhill.io/feed` |
+| 뉴스레터 | chamath | Chamath | rss | `https://chamath.substack.com/feed` |
+| 커뮤니티 | reddit-claudecode | r/ClaudeCode | rss | `https://www.reddit.com/r/ClaudeCode/.rss` |
+| 커뮤니티 | threads-choi | Threads @choi.openai | rsshub | `choi.openai` (route: threads) |
+| AI 미디어 | hn | Hacker News | rss | `https://news.ycombinator.com/rss` |
+| AI 미디어 | techmeme | Techmeme | rss | `https://www.techmeme.com/feed.xml` |
+| 테크 애널리스트 | benedict-evans | Benedict Evans | rss | `https://www.ben-evans.com/benedictevans?format=rss` |
+| 테크 애널리스트 | platformer | Platformer | rss | `https://www.platformer.news/feed` |
+| 테크 애널리스트 | the-generalist | The Generalist | rss | `https://www.generalist.com/feed` |
+| 테크 애널리스트 | stratechery | Stratechery | rss | `https://stratechery.com/feed/` |
+| 뉴스레터 | second-brush | Second Brush (데일리 프롬프트) | rss | `https://blog.secondbrush.co.kr/rss/` |
 
 > X 8개는 RSSHub 경유. 공개 인스턴스(`rsshub.app`)는 X 차단으로 빈 응답이 잦으므로
 > 운영 안정화 시 RSSHub self-host 필수. `docs/runbooks/rsshub-self-host.md` 참조.
